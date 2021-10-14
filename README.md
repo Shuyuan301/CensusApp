@@ -1,6 +1,6 @@
 # CensusApp
 
-Learn Shiny 
+**Learn Shiny** 
 
 ### How to run the code in R?
 
