@@ -4,13 +4,13 @@ library(mapproj) ## added by Yongsu
 # runUrl("http://pages.stat.wisc.edu/~karlrohe/ds479/code/census-app.zip")
 
 source("helpers.R")
+
 counties <- readRDS("counties.rds")
-percent_map(counties$white, "darkgreen", "% White")
+
 
 # User interface ----
 ui <- fluidPage(
-  titlePanel("censusVis"),
-  
+  titlePanel("Census Visualization"),
   sidebarLayout(
     sidebarPanel(
       helpText("Create demographic maps with 
@@ -18,8 +18,10 @@ ui <- fluidPage(
       
       selectInput("var", 
                   label = "Choose a variable to display",
-                  choices = c("Percent White", "Percent Black",
-                              "Percent Hispanic", "Percent Asian"),
+                  choices = c("Percent White", 
+                              "Percent Black",
+                              "Percent Hispanic", 
+                              "Percent Asian"),
                   selected = "Percent White"),
       
       sliderInput("range", 
@@ -27,35 +29,38 @@ ui <- fluidPage(
                   min = 0, max = 100, value = c(0, 100))
     ),
     
-    mainPanel(plotOutput("map"))
+    mainPanel(
+      textOutput("text"),
+      plotOutput("map")
+    )
   )
 )
 
 # Server logic ----
-server <- function(input, output){
+server <- function(input, output) {
+  output$text <- renderText(
+    paste("You have selected ",input$var," for the range ",input$range[1]," to ",input$range[2])
+  )
   output$map <- renderPlot({
-    data <- switch(input$var, 
+    data <- switch(input$var,
                    "Percent White" = counties$white,
                    "Percent Black" = counties$black,
                    "Percent Hispanic" = counties$hispanic,
                    "Percent Asian" = counties$asian)
-    color <- switch(input$var, 
+    color <- switch(input$var,
                     "Percent White" = "darkgreen",
                     "Percent Black" = "black",
                     "Percent Hispanic" = "darkorange",
                     "Percent Asian" = "darkviolet")
-    
-    legend <- switch(input$var, 
+    legend <- switch(input$var,
                      "Percent White" = "% White",
                      "Percent Black" = "% Black",
                      "Percent Hispanic" = "% Hispanic",
                      "Percent Asian" = "% Asian")
     
-    percent_map(data, color, legend, input$range[1], input$range[2])
+    percent_map(data, color,legend,min = input$range[1],max = input$range[2])
   })
 }
-
-
 
 # Run app ----
 shinyApp(ui, server)
